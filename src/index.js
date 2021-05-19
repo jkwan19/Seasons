@@ -1,17 +1,60 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import "semantic-ui-css/semantic.min.css";
+import React from "react";
+import ReactDOM from "react-dom";
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+import SeasonDisplay from './SeasonDisplay';
+import Loading from './Loading';
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+class App extends React.Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      lat: null,
+      long: null,
+      errorMessage: null
+    }
+  }
+
+
+  componentDidMount() {
+    window.navigator.geolocation.getCurrentPosition(
+      (position) => {
+      const lat = position.coords.latitude;
+      const long = position.coords.longitude;
+      this.setState({
+        lat: lat,
+        long: long
+      })
+    },
+      (err) => {
+        console.log(err);
+      }
+    )
+  }
+
+  renderBody() {
+    if (this.state.errorMessage && !this.state.lat) {
+      return (
+        <div>Error: {this.state.errorMessage}</div>
+      )
+    }
+    if (!this.state.errorMessage && this.state.lat) {
+      return (
+        <SeasonDisplay lat={this.state.lat} />
+      )
+    }
+    return (
+      <Loading message="Please accept location request"/>
+    )
+  }
+  render() {
+    return (
+      <div className="border red">
+        {this.renderBody()}
+      </div>
+    )
+  }
+}
+
+ReactDOM.render(<App />, document.querySelector('#root'))
